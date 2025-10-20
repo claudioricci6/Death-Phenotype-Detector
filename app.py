@@ -1,5 +1,5 @@
 # ============================================================
-# ☠️ Death-Phenotype / High-Risk Detector (7 variables) - Streamlit
+# ☠️ High-Risk Detector for Solid Pseudopapillary Tumor - Streamlit
 # ============================================================
 # Uses the 7-feature Isolation Forest model saved as 'scp_highrisk_detector.pkl'
 # to classify patients as High-Risk (Death-Phenotype-like) vs Low-Risk
