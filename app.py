@@ -19,7 +19,7 @@ try:
     bundle = joblib.load("scp_highrisk_detector.pkl")
     scaler       = bundle["scaler"]
     iso          = bundle["iso"]
-    cols         = bundle["columns"]       # full training column order after encoding (TOP-10)
+    cols         = bundle["columns"]       # training column order after encoding (TOP-10)
     numeric_cols = bundle["numeric_cols"]  # ["LN ratio","Size max (mm)","LN pos","LN esaminati"]
     threshold    = bundle["threshold"]     # 95th percentile IF_score used in training
 except Exception as e:
@@ -39,8 +39,7 @@ col1, col2 = st.columns(2)
 with col1:
     sex = st.selectbox("Male gender", ["No", "Yes"])  # iSex → iSex_1
     rural = st.selectbox("Rural/small metropolitan hospital", ["No", "Yes"])  # iZona2 → iZona2_1
-    # Default = "No"; Yes => iInt2=1 (risk ↑), No => iInt2=0 (risk ↓)
-    typical = st.selectbox("Typical resection", ["No", "Yes"], index=0)
+    typical = st.selectbox("Typical resection", ["No", "Yes"], index=0)  # Yes ⇒ iInt2=1 (risk ↑), No ⇒ iInt2=0
     stage4 = st.selectbox("Stage IV", ["No", "Yes"])  # iStage → iStage_4
 with col2:
     ln_ratio = st.number_input("Lymph-node ratio", min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
@@ -48,12 +47,8 @@ with col2:
     ln_pos   = st.number_input("Lymph-nodes positive (count)", min_value=0.0, step=1.0, format="%.0f")
     ln_exam  = st.number_input("Lymph-nodes examined (count)", min_value=0.0, step=1.0, format="%.0f")
 
-# Age decade per dummies 7–8 (coerente con training: iEtaDecade ∈ {1..8})
-age_decade = st.selectbox(
-    "Age decade (training encoding 1–8)",
-    ["1","2","3","4","5","6","7","8"],
-    index=6  # default "7"
-)
+# Age flags coerenti col training: baseline <60 (nessun dummy), 60–69 ⇒ iEtaDecade_7=1, ≥70 ⇒ iEtaDecade_8=1
+age_flag = st.selectbox("Age category", ["<60 yrs", "60–69 yrs", "≥70 yrs"], index=0)
 
 st.markdown("---")
 
@@ -61,13 +56,13 @@ st.markdown("---")
 # Build model input (mirror the training preprocessing!)
 # ------------------------------------------------------------
 def build_encoded_row():
-    # Raw (pre-encoding) fields exactly as in training (TOP-10)
+    # Raw (pre-encoding) fields esattamente come in training (TOP-10)
     patient_raw = {
         "iSex":            1 if sex == "Yes" else 0,
-        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1); NO → iInt2=0
+        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1); NO → 0
         "iZona2":          1 if rural == "Yes" else 0,
         "iStage":          4 if stage4 == "Yes" else 0,   # 4 to activate iStage_4 dummy; 0 otherwise
-        "iEtaDecade":      int(age_decade),               # genera dummies iEtaDecade_7 e _8 con drop_first=True
+        # Età: non passiamo iEtaDecade al get_dummies; creiamo direttamente i flag dopo l'encoding
         "LN ratio":        float(ln_ratio),
         "Size max (mm)":   float(size_mm),
         "LN pos":          float(ln_pos),
@@ -75,12 +70,16 @@ def build_encoded_row():
     }
     X_new_base = pd.DataFrame([patient_raw])
 
-    # One-hot encode like training (TOP-10)
+    # One-hot encode like training (senza iEtaDecade: i flag li aggiungiamo a mano)
     X_new_enc = pd.get_dummies(
         X_new_base,
-        columns=["iSex", "iInt2", "iZona2", "iStage", "iEtaDecade"],
+        columns=["iSex", "iInt2", "iZona2", "iStage"],
         drop_first=True
     )
+
+    # ---- Age flags (coerenti col training che usava iEtaDecade_7 e iEtaDecade_8) ----
+    X_new_enc["iEtaDecade_7"] = 1 if age_flag == "60–69 yrs" else 0
+    X_new_enc["iEtaDecade_8"] = 1 if age_flag == "≥70 yrs"  else 0
 
     # Ensure all training columns exist (add missing dummy columns as 0)
     for c in cols:
@@ -136,7 +135,7 @@ are labeled as **High-Risk / Death-Phenotype-like**.
 - *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.  
 - The model here uses **10 features**: LN ratio, iZona2 (rural/small metro), iSex (male), iInt2 (typical resection recode),
   iStage (Stage IV), tumor size (mm), LN positive (count), **LN examined (count)**,
-  and **age-decade dummies** (7 and 8) generated from `iEtaDecade`.
+  and age flags **iEtaDecade_7 (60–69 yrs)** and **iEtaDecade_8 (≥70 yrs)**.
 
 ---
 
