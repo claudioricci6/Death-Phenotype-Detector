@@ -29,7 +29,7 @@ except Exception as e:
 # ------------------------------------------------------------
 # UI
 # ------------------------------------------------------------
-st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor ")
+st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor")
 st.markdown("""
 Estimate whether a patient’s profile matches a **High-Risk / Death-Phenotype-like** pattern  
 using **10 features** derived from the training pipeline.
@@ -37,18 +37,29 @@ using **10 features** derived from the training pipeline.
 
 col1, col2 = st.columns(2)
 with col1:
-    sex = st.selectbox("Male gender", ["No", "Yes"])  # iSex → iSex_1
+    sex = st.selectbox("Male gender", ["No", "Yes"])                 # iSex → iSex_1
     rural = st.selectbox("Rural/small metropolitan hospital", ["No", "Yes"])  # iZona2 → iZona2_1
-    typical = st.selectbox("Typical resection", ["No", "Yes"], index=0)  # Yes ⇒ iInt2=1 (risk ↑), No ⇒ iInt2=0
-    stage4 = st.selectbox("Stage IV", ["No", "Yes"])  # iStage → iStage_4
+    typical = st.selectbox("Typical resection", ["No", "Yes"], index=0)       # Yes ⇒ iInt2=1 (risk ↑)
+    stage4 = st.selectbox("Stage IV", ["No", "Yes"])                  # iStage → iStage_4
 with col2:
-    ln_ratio = st.number_input("Lymph-node ratio", min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
     size_mm  = st.number_input("Tumor size (mm)", min_value=0.0, step=1.0, format="%.0f")
     ln_pos   = st.number_input("Lymph-nodes positive (count)", min_value=0.0, step=1.0, format="%.0f")
     ln_exam  = st.number_input("Lymph-nodes examined (count)", min_value=0.0, step=1.0, format="%.0f")
 
 # Age flags coerenti col training: baseline <60 (nessun dummy), 60–69 ⇒ iEtaDecade_7=1, ≥70 ⇒ iEtaDecade_8=1
 age_flag = st.selectbox("Age category", ["<60 yrs", "60–69 yrs", "≥70 yrs"], index=0)
+
+# --- Compute LN ratio automatically ---
+if ln_exam == 0:
+    ln_ratio_calc = 0.0
+    if ln_pos > 0:
+        st.warning("LN examined is 0: lymph-node ratio set to 0.0.")
+else:
+    if ln_pos > ln_exam:
+        st.warning("Lymph-nodes positive exceeds nodes examined. Capping ratio at 1.0 and using LN pos = LN examined for ratio.")
+    ln_ratio_calc = min(max(ln_pos, 0.0), ln_exam) / ln_exam  # bound to [0,1]
+
+st.info(f"**Computed lymph-node ratio:** {ln_ratio_calc:.2f}")
 
 st.markdown("---")
 
@@ -59,25 +70,24 @@ def build_encoded_row():
     # Raw (pre-encoding) fields esattamente come in training (TOP-10)
     patient_raw = {
         "iSex":            1 if sex == "Yes" else 0,
-        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1); NO → 0
+        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1)
         "iZona2":          1 if rural == "Yes" else 0,
         "iStage":          4 if stage4 == "Yes" else 0,   # 4 to activate iStage_4 dummy; 0 otherwise
-        # Età: non passiamo iEtaDecade al get_dummies; creiamo direttamente i flag dopo l'encoding
-        "LN ratio":        float(ln_ratio),
+        "LN ratio":        float(ln_ratio_calc),          # <-- auto-computed
         "Size max (mm)":   float(size_mm),
         "LN pos":          float(ln_pos),
         "LN esaminati":    float(ln_exam),
     }
     X_new_base = pd.DataFrame([patient_raw])
 
-    # One-hot encode like training (senza iEtaDecade: i flag li aggiungiamo a mano)
+    # One-hot encode like training (senza iEtaDecade: creiamo direttamente i flag dopo)
     X_new_enc = pd.get_dummies(
         X_new_base,
         columns=["iSex", "iInt2", "iZona2", "iStage"],
         drop_first=True
     )
 
-    # ---- Age flags (coerenti col training che usava iEtaDecade_7 e iEtaDecade_8) ----
+    # ---- Age flags (training used iEtaDecade_7 and iEtaDecade_8) ----
     X_new_enc["iEtaDecade_7"] = 1 if age_flag == "60–69 yrs" else 0
     X_new_enc["iEtaDecade_8"] = 1 if age_flag == "≥70 yrs"  else 0
 
