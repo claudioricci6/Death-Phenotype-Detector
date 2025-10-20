@@ -13,7 +13,7 @@ import numpy as np
 # ------------------------------------------------------------
 # Load trained model artefacts (7 variables bundle)
 # ------------------------------------------------------------
-st.set_page_config(page_title="High-Risk (Death-Phenotype) Detector", layout="centered")
+st.set_page_config(page_title="High-Risk Detector for Solid Pseudopapillary Tumor", layout="centered")
 
 try:
     bundle = joblib.load("scp_highrisk_detector.pkl")
