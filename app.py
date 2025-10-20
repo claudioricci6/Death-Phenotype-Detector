@@ -37,10 +37,10 @@ using **7 features** derived from your training pipeline.
 
 col1, col2 = st.columns(2)
 with col1:
-    sex = st.selectbox("Male gender (iSex)", ["No", "Yes"])                  # iSex → iSex_1
-    rural = st.selectbox("Rural/small metropolitan hospital (iZona2)", ["No", "Yes"])  # iZona2 → iZona2_1
-    typical = st.selectbox("Typical resection (iInt==1)", ["Yes", "No"])     # recoded to iInt2 (No→1)
-    stage4 = st.selectbox("Stage IV (iStage)", ["No", "Yes"])                # iStage → iStage_4
+    sex = st.selectbox("Male gender", ["No", "Yes"])                  # iSex → iSex_1
+    rural = st.selectbox("Rural/small metropolitan hospital", ["No", "Yes"])  # iZona2 → iZona2_1
+    typical = st.selectbox("Typical resection", ["Yes", "No"])     # recoded to iInt2 (No→1)
+    stage4 = st.selectbox("Stage IV", ["No", "Yes"])                # iStage → iStage_4
 with col2:
     ln_ratio = st.number_input("Lymph-node ratio", min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
     size_mm  = st.number_input("Tumor size (mm)", min_value=0.0, step=1.0, format="%.0f")
