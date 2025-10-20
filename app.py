@@ -29,7 +29,7 @@ except Exception as e:
 # ------------------------------------------------------------
 # UI
 # ------------------------------------------------------------
-st.title("☠️ High-Risk (Death-Phenotype) Detector — 7 variables")
+st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor")
 st.markdown("""
 Estimate whether a patient’s profile matches a **High-Risk / Death-Phenotype-like** pattern  
 using **7 features** derived from your training pipeline.
