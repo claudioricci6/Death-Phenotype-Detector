@@ -1,7 +1,7 @@
 # ============================================================
-# ☠️ High-Risk Detector for Solid Pseudopapillary Tumor - Streamlit
+# ☠️ High-Risk Detector for Solid Pseudopapillary Tumor - Streamlit (TOP-10)
 # ============================================================
-# Uses the 7-feature Isolation Forest model saved as 'scp_highrisk_detector.pkl'
+# Uses the 10-feature Isolation Forest model saved as 'scp_highrisk_detector.pkl'
 # to classify patients as High-Risk (Death-Phenotype-like) vs Low-Risk
 # ============================================================
 
@@ -11,7 +11,7 @@ import joblib
 import numpy as np
 
 # ------------------------------------------------------------
-# Load trained model artefacts (7 variables bundle)
+# Load trained model artefacts (TOP-10 bundle)
 # ------------------------------------------------------------
 st.set_page_config(page_title="High-Risk Detector for Solid Pseudopapillary Tumor", layout="centered")
 
@@ -19,8 +19,8 @@ try:
     bundle = joblib.load("scp_highrisk_detector.pkl")
     scaler       = bundle["scaler"]
     iso          = bundle["iso"]
-    cols         = bundle["columns"]       # full training column order after encoding
-    numeric_cols = bundle["numeric_cols"]  # ["LN ratio", "Size max (mm)", "LN pos"]
+    cols         = bundle["columns"]       # full training column order after encoding (TOP-10)
+    numeric_cols = bundle["numeric_cols"]  # ["LN ratio","Size max (mm)","LN pos","LN esaminati"]
     threshold    = bundle["threshold"]     # 95th percentile IF_score used in training
 except Exception as e:
     st.error("❌ Could not load 'scp_highrisk_detector.pkl'. Make sure it is in the same folder.")
@@ -29,10 +29,10 @@ except Exception as e:
 # ------------------------------------------------------------
 # UI
 # ------------------------------------------------------------
-st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor")
+st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor — TOP-10 features")
 st.markdown("""
 Estimate whether a patient’s profile matches a **High-Risk / Death-Phenotype-like** pattern  
-using **7 features** derived from your training pipeline.
+using **10 features** derived from the training pipeline.
 """)
 
 col1, col2 = st.columns(2)
@@ -46,6 +46,14 @@ with col2:
     ln_ratio = st.number_input("Lymph-node ratio", min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
     size_mm  = st.number_input("Tumor size (mm)", min_value=0.0, step=1.0, format="%.0f")
     ln_pos   = st.number_input("Lymph-nodes positive (count)", min_value=0.0, step=1.0, format="%.0f")
+    ln_exam  = st.number_input("Lymph-nodes examined (count)", min_value=0.0, step=1.0, format="%.0f")
+
+# Age decade per dummies 7–8 (coerente con training: iEtaDecade ∈ {1..8})
+age_decade = st.selectbox(
+    "Age decade (training encoding 1–8)",
+    ["1","2","3","4","5","6","7","8"],
+    index=6  # default "7"
+)
 
 st.markdown("---")
 
@@ -53,22 +61,24 @@ st.markdown("---")
 # Build model input (mirror the training preprocessing!)
 # ------------------------------------------------------------
 def build_encoded_row():
-    # Raw (pre-encoding) fields exactly as in training
+    # Raw (pre-encoding) fields exactly as in training (TOP-10)
     patient_raw = {
         "iSex":            1 if sex == "Yes" else 0,
-        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1); NO → lower risk (iInt2=0)
+        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1); NO → iInt2=0
         "iZona2":          1 if rural == "Yes" else 0,
         "iStage":          4 if stage4 == "Yes" else 0,   # 4 to activate iStage_4 dummy; 0 otherwise
+        "iEtaDecade":      int(age_decade),               # genera dummies iEtaDecade_7 e _8 con drop_first=True
         "LN ratio":        float(ln_ratio),
         "Size max (mm)":   float(size_mm),
         "LN pos":          float(ln_pos),
+        "LN esaminati":    float(ln_exam),
     }
     X_new_base = pd.DataFrame([patient_raw])
 
-    # One-hot encode like training
+    # One-hot encode like training (TOP-10)
     X_new_enc = pd.get_dummies(
         X_new_base,
-        columns=["iSex", "iInt2", "iZona2", "iStage"],
+        columns=["iSex", "iInt2", "iZona2", "iStage", "iEtaDecade"],
         drop_first=True
     )
 
@@ -122,7 +132,11 @@ to identify patients whose clinical profiles resemble a *death-phenotype* patter
 Patients with anomaly scores above the **95th percentile** of the Isolation Forest distribution  
 are labeled as **High-Risk / Death-Phenotype-like**.
 
-**Note on "Typical resection":** in this app, *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.
+**Notes.**
+- *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.  
+- The model here uses **10 features**: LN ratio, iZona2 (rural/small metro), iSex (male), iInt2 (typical resection recode),
+  iStage (Stage IV), tumor size (mm), LN positive (count), **LN examined (count)**,
+  and **age-decade dummies** (7 and 8) generated from `iEtaDecade`.
 
 ---
 
