@@ -133,9 +133,9 @@ are labeled as **High-Risk / Death-Phenotype-like**.
 
 **Notes.**
 - *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.  
-- The model here uses **10 features**: LN ratio, iZona2 (rural/small metro), iSex (male), iInt2 (typical resection recode),
-  iStage (Stage IV), tumor size (mm), LN positive (count), **LN examined (count)**,
-  and age flags **iEtaDecade_7 (60–69 yrs)** and **iEtaDecade_8 (≥70 yrs)**.
+- The model was trained on a cohort of **387 patients** extracted from the SEER database.  
+- The apparent (in-sample) discrimination of the model reached an **AUC = 0.891**,  
+  while the cross-validated (out-of-sample, single-patient) performance yielded an **AUC = 0.727**. 
 
 ---
 
