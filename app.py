@@ -113,16 +113,20 @@ else:
 # ------------------------------------------------------------
 st.markdown("""
 ---
-**Model inputs (7 features):**  
-- iSex → *Male gender*  
-- iInt2 → *Typical resection (binary recode of iInt)*  
-- iZona2 → *Rural/small metropolitan hospital*  
-- iStage → *Stage IV dummy (iStage_4)*  
-- LN ratio (scaled)  
-- Size max (mm) (scaled)  
-- LN pos (scaled)  
+### 🧠 Model information
+This prototype was developed using data from the **SEER (Surveillance, Epidemiology, and End Results) database**,  
+applying a **machine learning anomaly-detection approach** (Isolation Forest)  
+to identify patients whose clinical profiles resemble a *death-phenotype* pattern.
 
-Patients above the **95th percentile** of Isolation Forest anomaly scores are labeled **High-Risk**.  
-*For research and educational purposes only.*
+Patients with anomaly scores above the **95th percentile** of the Isolation Forest distribution  
+are labeled as **High-Risk / Death-Phenotype-like**.
+
+---
+
+**Developed by [Claudio Ricci, MD, PhD](mailto:claudio.ricci@unibo.it)**  
+*Associate Professor of Surgery — University of Bologna*  
+*IRCCS Azienda Ospedaliero–Universitaria di Bologna (S. Orsola–Malpighi Hospital)*  
+
+© 2025 — For research and educational purposes only.
 """)
 
