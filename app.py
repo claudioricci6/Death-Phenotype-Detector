@@ -29,7 +29,7 @@ except Exception as e:
 # ------------------------------------------------------------
 # UI
 # ------------------------------------------------------------
-st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor — TOP-10 features")
+st.title("☠️ High-Risk Detector for Solid Pseudopapillary Tumor ")
 st.markdown("""
 Estimate whether a patient’s profile matches a **High-Risk / Death-Phenotype-like** pattern  
 using **10 features** derived from the training pipeline.
@@ -124,12 +124,10 @@ else:
 st.markdown("""
 ---
 ### 🧠 Model information
-This prototype was developed using data from the **SEER (Surveillance, Epidemiology, and End Results) database**,  
-applying a **machine learning anomaly-detection approach** (Isolation Forest)  
+This prototype was developed using data from the **SEER (Surveillance, Epidemiology, and End Results) database**, applying a **machine learning anomaly-detection approach** (Isolation Forest)  
 to identify patients whose clinical profiles resemble a *death-phenotype* pattern.
 
-Patients with anomaly scores above the **95th percentile** of the Isolation Forest distribution  
-are labeled as **High-Risk / Death-Phenotype-like**.
+Patients with anomaly scores above the **95th percentile** of the Isolation Forest distribution are labeled as **High-Risk / Death-Phenotype-like**.
 
 **Notes.**
 - *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.  
