@@ -37,10 +37,11 @@ using **7 features** derived from your training pipeline.
 
 col1, col2 = st.columns(2)
 with col1:
-    sex = st.selectbox("Male gender", ["No", "Yes"])                  # iSex → iSex_1
+    sex = st.selectbox("Male gender", ["No", "Yes"])  # iSex → iSex_1
     rural = st.selectbox("Rural/small metropolitan hospital", ["No", "Yes"])  # iZona2 → iZona2_1
-    typical = st.selectbox("Typical resection", ["Yes", "No"])     # recoded to iInt2 (No→1)
-    stage4 = st.selectbox("Stage IV", ["No", "Yes"])                # iStage → iStage_4
+    # Default = "No"; Yes => iInt2=1 (risk ↑), No => iInt2=0 (risk ↓)
+    typical = st.selectbox("Typical resection", ["No", "Yes"], index=0)
+    stage4 = st.selectbox("Stage IV", ["No", "Yes"])  # iStage → iStage_4
 with col2:
     ln_ratio = st.number_input("Lymph-node ratio", min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
     size_mm  = st.number_input("Tumor size (mm)", min_value=0.0, step=1.0, format="%.0f")
@@ -55,7 +56,7 @@ def build_encoded_row():
     # Raw (pre-encoding) fields exactly as in training
     patient_raw = {
         "iSex":            1 if sex == "Yes" else 0,
-        "iInt2":           0 if typical == "Yes" else 1,  # iInt2=1 if NOT typical (iInt>1)
+        "iInt2":           1 if typical == "Yes" else 0,  # YES → higher risk (iInt2=1); NO → lower risk (iInt2=0)
         "iZona2":          1 if rural == "Yes" else 0,
         "iStage":          4 if stage4 == "Yes" else 0,   # 4 to activate iStage_4 dummy; 0 otherwise
         "LN ratio":        float(ln_ratio),
@@ -98,10 +99,10 @@ if st.button("Classify patient"):
         st.markdown("---")
         if if_score >= threshold:
             st.error("☠️ **HIGH-RISK / Death-Phenotype-like**")
-            st.markdown("🔴 *Atypical clinical profile with high-risk of cancer death*")
+            st.markdown("🔴 *Atypical clinical profile with high risk of cancer-specific death*")
         else:
             st.success("✅ **LOW-RISK**")
-            st.markdown("🟢 *Typical clinical profile with low-risk of cancer death*")
+            st.markdown("🟢 *Profile not indicative of death-phenotype (low anomaly score)*")
 
     except Exception as e:
         st.error(f"⚠️ Error during prediction: {e}")
@@ -120,6 +121,8 @@ to identify patients whose clinical profiles resemble a *death-phenotype* patter
 
 Patients with anomaly scores above the **95th percentile** of the Isolation Forest distribution  
 are labeled as **High-Risk / Death-Phenotype-like**.
+
+**Note on "Typical resection":** in this app, *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.
 
 ---
 
