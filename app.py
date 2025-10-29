@@ -135,15 +135,13 @@ st.markdown("""
 ---
 ### 🧠 Model information
 This prototype was developed using data from the **SEER (Surveillance, Epidemiology, and End Results) database**, applying a **machine learning anomaly-detection approach** (Isolation Forest)  
-to identify patients whose clinical profiles resemble a *death-phenotype* pattern.
-
+to identify patients whose clinical profiles resemble a *death-phenotype* pattern. The model was externally validated in an independent cohort.
 Patients with anomaly scores above the **95th percentile** of the Isolation Forest distribution are labeled as **High-Risk / Death-Phenotype-like**.
 
 **Notes.**
 - *Typical resection* includes **pancreaticoduodenectomy, left pancreatectomy, and total pancreatectomy**.  
 - The model was trained on a cohort of **387 patients** extracted from the SEER database.  
-- The apparent (in-sample) discrimination of the model reached an **AUC = 0.891**,  
-  while the cross-validated (out-of-sample, single-patient) performance yielded an **AUC = 0.727**. 
+- The apparent (in-sample) discrimination of the model reached an **AUC = 0.891**, while the cross-validated (out-of-sample, single-patient) performance yielded an **AUC = 0.727**. External validation yielded an AUC of 0.975.
 
 ---
 
