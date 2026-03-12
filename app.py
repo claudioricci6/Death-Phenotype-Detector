@@ -1,5 +1,5 @@
 # ============================================================
-# ☠️ High-Risk Detector for Solid Pseudopapillary Tumor - Streamlit (TOP-10)
+#  High-Risk Detector for Solid Pseudopapillary Tumor - Streamlit (TOP-10)
 # ============================================================
 # Uses the 10-feature Isolation Forest model saved as 'scp_highrisk_detector.pkl'
 # to classify patients as High-Risk vs Low-Risk
@@ -31,7 +31,7 @@ except Exception as e:
 # ------------------------------------------------------------
 st.title(" High-Risk Detector for Solid Pseudopapillary Tumor")
 st.markdown("""
-Estimate whether a patient’s profile matches a **High-Risk / Death-Phenotype-like** pattern  
+Estimate whether a patient’s profile matches a **High-Risk Phenotype-like** pattern  
 using **10 features** derived from the training pipeline.
 """)
 
